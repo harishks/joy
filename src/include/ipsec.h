@@ -1,24 +1,24 @@
 /*
- *	
+ *
  * Copyright (c) 2016 Cisco Systems, Inc.
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  *   Redistributions of source code must retain the above copyright
  *   notice, this list of conditions and the following disclaimer.
- * 
+ *
  *   Redistributions in binary form must reproduce the above
  *   copyright notice, this list of conditions and the following
  *   disclaimer in the documentation and/or other materials provided
  *   with the distribution.
- * 
+ *
  *   Neither the name of the Cisco Systems, Inc. nor the names of its
  *   contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -34,25 +34,46 @@
  *
  */
 
-/**
- * \file modules.h
+/*
+ * ipsec.h
  *
- * \brief module interface
+ * IP Security (IPsec) awareness for joy
  *
  */
-#ifndef MODULES_H
-#define MODULES_H
 
-#include "wht.h"          /* walsh-hadamard transform      */
-#include "example.h"      /* example feature module        */
-#include "dns.h"          /* DNS response capture          */
-#include "ssh.h"          /* secure shell protocol         */
-#include "ipsec.h"        /* IPsec protocol                */
-#include "ip_id.h"        /* ipv4 identification field     */
-#include "salt.h"         /* seq of app lengths and times  */
-#include "ppi.h"          /* per-packet information        */
-#include "tls.h"          /* tls protocol                  */
-#include "dhcp.h"         /* dhcp protocol                 */
-#include "http.h"         /* http protocol                 */
+#ifndef IPSEC_H
+#define IPSEC_H
 
-#endif /* MODULES_H */
+#include <stdio.h>      /* for FILE* */
+#include <pcap.h>
+#include "output.h"
+#include "feature.h"
+#include "utils.h"      /* for enum role */
+
+#define ipsec_usage "  ipsec=1                      report IPsec information\n"
+
+#define ipsec_filter(key) ((key->prot == 17) && (key->dp == 500 || key->sp == 500))
+
+typedef struct ipsec {
+} ipsec_t;
+
+declare_feature(ipsec);
+
+void ipsec_init(struct ipsec **ipsec_handle);
+
+void ipsec_update(struct ipsec *ipsec,
+                const struct pcap_pkthdr *header,
+		const void *data,
+		unsigned int len,
+		unsigned int report_ipsec);
+
+void ipsec_print_json(const struct ipsec *w1,
+		    const struct ipsec *w2,
+		    zfile f);
+
+void ipsec_delete(struct ipsec **ipsec_handle);
+
+void ipsec_unit_test();
+
+#endif /* IPSEC_H */
+
