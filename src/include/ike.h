@@ -35,14 +35,14 @@
  */
 
 /*
- * ipsec.h
+ * ike.h
  *
- * IP Security (IPsec) awareness for joy
+ * Internet Key Exchange (IKE) awareness for joy
  *
  */
 
-#ifndef IPSEC_H
-#define IPSEC_H
+#ifndef IKE_H
+#define IKE_H
 
 #include <stdio.h>      /* for FILE* */
 #include <pcap.h>
@@ -50,30 +50,66 @@
 #include "feature.h"
 #include "utils.h"      /* for enum role */
 
-#define ipsec_usage "  ipsec=1                      report IPsec information\n"
+#define ike_usage "  ike=1                      report IKE information\n"
 
-#define ipsec_filter(key) ((key->prot == 17) && (key->dp == 500 || key->sp == 500))
+#define ike_filter(key) ((key->prot == 17) && (key->dp == 500 || key->sp == 500 || key->dp == 4500 || key->sp == 4500))
 
-typedef struct ipsec {
-} ipsec_t;
+#define IKE_MAX_MESSAGE_LEN 35000 // must be at least 1200, should be at least 3000 according to https://tools.ietf.org/html/rfc5996
+#define IKE_MAX_MESSAGES 2 // TODO
+#define IKE_MAX_PAYLOADS 10 // TODO
+#define IKE_MAX_PROPOSALS 10 // TODO
+#define IKE_MAX_TRANSFORMS 20 // TODO
+#define IKE_MAX_ATTRIBUTES 10 // TODO
 
-declare_feature(ipsec);
+/* IKEv1 and IKEv2 share the same message header format */
+struct ike_hdr {
+    uint8_t init_spi[8];
+    uint8_t resp_spi[8];
+    uint8_t next_payload;
+    uint8_t major;
+    uint8_t minor;
+    uint8_t exchange_type;
+    uint8_t flags;
+    uint32_t message_id;
+    uint32_t length;
+};
 
-void ipsec_init(struct ipsec **ipsec_handle);
+struct ike_payload {
+    uint8_t type;
+    uint8_t next_payload;
+    uint8_t reserved;
+    uint16_t length;
+    struct ike_payload_body *body;
+};
 
-void ipsec_update(struct ipsec *ipsec,
+struct ike_msg {
+    struct ike_hdr *hdr;
+    struct ike_payload *payloads[IKE_MAX_PAYLOADS];
+    unsigned int num_payloads;
+};
+
+typedef struct ike {
+    unsigned int num_ike_msgs;
+    struct ike_msg *ike_msgs[IKE_MAX_MESSAGES];
+} ike_t;
+
+declare_feature(ike);
+
+void ike_init(struct ike **ike_handle);
+
+void ike_update(struct ike *ike,
                 const struct pcap_pkthdr *header,
 		const void *data,
 		unsigned int len,
-		unsigned int report_ipsec);
+		unsigned int report_ike);
 
-void ipsec_print_json(const struct ipsec *w1,
-		    const struct ipsec *w2,
+void ike_print_json(const struct ike *w1,
+		    const struct ike *w2,
 		    zfile f);
 
-void ipsec_delete(struct ipsec **ipsec_handle);
+void ike_delete(struct ike **ike_handle);
 
-void ipsec_unit_test();
+void ike_unit_test();
 
-#endif /* IPSEC_H */
+#endif /* IKE_H */
 

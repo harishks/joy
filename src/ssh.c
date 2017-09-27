@@ -869,7 +869,7 @@ void ssh_update(struct ssh *ssh,
         vector_free(ssh->buffer);
     }
 
-    }
+    } /* report_ssh */
 
 }
 
