@@ -880,15 +880,16 @@ void ssh_print_json(const struct ssh *x1,
     struct ssh *cli = NULL, *srv = NULL;
     char *ptr;
 
-    if (x1->role == role_unknown) {
-        return;
+    switch(x1->role) {
+        case role_client:
+            cli = (struct ssh*)x1;
+            srv = (struct ssh*)x2;
+        case role_server:
+            srv = (struct ssh*)x1;
+        default:
+            return;
     }
-    if (x1->role == role_client) {
-        cli = (struct ssh*)x1;
-        srv = (struct ssh*)x2;
-    } else { // x1->role == role_server
-        srv = (struct ssh*)x1;
-    }
+
     ssh_process(cli, srv);
     zprintf(f, ",\"ssh\":{");
     if (cli != NULL) {

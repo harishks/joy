@@ -61,36 +61,10 @@
 #define IKE_MAX_TRANSFORMS 20 // TODO
 #define IKE_MAX_ATTRIBUTES 10 // TODO
 
-/* IKEv1 and IKEv2 share the same message header format */
-struct ike_hdr {
-    uint8_t init_spi[8];
-    uint8_t resp_spi[8];
-    uint8_t next_payload;
-    uint8_t major;
-    uint8_t minor;
-    uint8_t exchange_type;
-    uint8_t flags;
-    uint32_t message_id;
-    uint32_t length;
-};
-
-struct ike_payload {
-    uint8_t type;
-    uint8_t next_payload;
-    uint8_t reserved;
-    uint16_t length;
-    struct ike_payload_body *body;
-};
-
-struct ike_msg {
-    struct ike_hdr *hdr;
-    struct ike_payload *payloads[IKE_MAX_PAYLOADS];
-    unsigned int num_payloads;
-};
-
 typedef struct ike {
-    unsigned int num_ike_msgs;
-    struct ike_msg *ike_msgs[IKE_MAX_MESSAGES];
+    enum role role;
+    unsigned int num_messages;
+    struct ike_message *messages[IKE_MAX_MESSAGES];
 } ike_t;
 
 declare_feature(ike);
