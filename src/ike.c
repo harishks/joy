@@ -137,6 +137,35 @@ static void vector_set(struct vector *vector,
 }
 
 /*
+ *
+ * \brief Append the specified data to the current vector contents, even if the
+ * vector is currently empty.
+ *
+ * \param vector Pointer to the vector to be appended to.
+ * \param data Pointer to byte array to be appended.
+ * \param len Length of the byte array to be appended.
+ *
+ */
+static void vector_append(struct vector *vector,
+                          const char *data,
+                          unsigned int len) {
+    unsigned char *tmpptr = NULL;
+
+    tmpptr = malloc(vector->len + len);
+    if (tmpptr == NULL) {
+        joy_log_err("malloc failed");
+        return;
+    }
+    memcpy(tmpptr, vector->bytes, vector->len);
+    memcpy(tmpptr + vector->len, data, len);
+    if (vector->bytes != NULL) {
+        free(vector->bytes);
+    }
+    vector->bytes = tmpptr;
+    vector->len += len;
+}
+
+/*
  * @brief Enumeration representing Payload Types
  */
 enum ike_payload_type {
@@ -3412,6 +3441,7 @@ inline void ike_init(struct ike **ike_handle) {
         joy_log_err("malloc failed");
         return;
     }
+    vector_init(&(*ike_handle)->buffer);
 }
 
 void ike_update(struct ike *ike,
@@ -3426,14 +3456,28 @@ void ike_update(struct ike *ike,
     return;        /* skip zero-length messages */
     }
 
-    // TODO: If this is port 4500 and the first four bytes are zero, then skip them (non-ESP indication).
+    /*
+     * If a NAT is detected between the Initiator and the Responder, then
+     * subsequent IKE packets are sent over UDP port 4500 with four bytes of
+     * zero at the start of the UDP payload, and ESP packets are sent out over
+     * UDP port 4500.  Some peers default to using UDP encapsulation even when
+     * no NAT is detected on the path, as some middleboxes do not support IP
+     * protocols other than TCP and UDP (RFC 3948).
+     *
+     * TCP encapsulation uses a similar four zero byte non-ESP marker, but the
+     * marker is preceeded by a 2-byte length field (RFC 8229).
+     */
     if (len >= 4 && memcmp(data_ptr, "\x00\x00\x00\x00", 4) == 0) {
         len -= 4;
         data_ptr += 4;
     }
 
-
     if (report_ike) {
+
+    /* append application-layer data to buffer (to deal with IP fragmentation) */
+    vector_append(ike->buffer, data_ptr, len);
+    data_ptr = (const char *)ike->buffer->bytes;
+    len = ike->buffer->len;
 
     while (len > 0 && ike->num_messages < IKE_MAX_MESSAGES) { /* parse all messages in the buffer */
         ike_message_init(&ike->messages[ike->num_messages]);
@@ -3449,6 +3493,9 @@ void ike_update(struct ike *ike,
         data_ptr += length;
         ike->num_messages++;
     }
+
+    /* update buffer */
+    vector_set(ike->buffer, data_ptr, len);
 
     } /* report_ike */
 }
@@ -3512,6 +3559,7 @@ void ike_delete(struct ike **ike_handle) {
         ike_message_delete(&ike->messages[i]);
     }
 
+    vector_delete(&ike->buffer);
     free(ike);
     *ike_handle = NULL;
     

@@ -189,6 +189,7 @@ typedef struct ike {
     enum role role;
     unsigned int num_messages;
     struct ike_message *messages[IKE_MAX_MESSAGES];
+    struct vector *buffer;
 } ike_t;
 
 declare_feature(ike);
