@@ -114,7 +114,7 @@ static const char * memsearch(const char *buf, const unsigned int buflen, const 
 }
 
 /*
- * A vector is contains a pointer to a string of bytes of a specified length.
+ * A vector is contains a pointer to a string of bytes with a given length.
  */
 struct vector {
     unsigned int len;
