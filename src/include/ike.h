@@ -168,8 +168,8 @@ struct ike_payload {
 };
 
 struct ike_header {
-    uint8_t init_spi[8];
-    uint8_t resp_spi[8];
+    uint8_t init_spi[8]; /* IKEv1 initiator cookie */
+    uint8_t resp_spi[8]; /* IKEv1 responder cookie */
     uint8_t next_payload;
     uint8_t major;
     uint8_t minor;
