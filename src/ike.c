@@ -57,7 +57,7 @@
 #include "err.h"        /* for logging             */
 
 /*
- * A vector is contains a pointer to a string of bytes of a specified length.
+ * \brief A vector is contains a pointer to a string of bytes of a specified length.
  */
 struct vector {
     unsigned int len;
@@ -3180,7 +3180,6 @@ static void ike_payload_init(struct ike_payload **s_handle) {
     }
 }
 
-
 static unsigned int ike_payload_unmarshal(struct ike_payload *s, const char *x, unsigned int len) {
     unsigned int offset = 0;
     unsigned int length;
@@ -3482,7 +3481,6 @@ static int ike_attribute_match(struct ike_attribute *a, struct ike_attribute *b)
     return 1;
 }
 
-
 /*
  * \brief Check that the initiator and responder transforms match, and that
  * each attribute in the responder transform is unique and matches an attribute
@@ -3573,9 +3571,9 @@ static int ike_proposal_match(struct ike_proposal *init_proposal, struct ike_pro
 }
 
 /*
- * \brief Check that the initiator and responder sas match, and that each
- * proposal in the responder security association is unique and matches a
- * proposal in the initiator security association
+ * \brief Check that the initiator and responder security associations match,
+ * and that each proposal in the responder security association is unique and
+ * matches a proposal in the initiator security association
  */
 static int ike_sa_match(struct ike_sa *init_sa, struct ike_sa *resp_sa) {
     int init_i;
