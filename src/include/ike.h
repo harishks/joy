@@ -55,6 +55,7 @@
 #define ike_filter(key) ((key->prot == 17) && (key->dp == 500 || key->sp == 500 || key->dp == 4500 || key->sp == 4500))
 
 #define IKE_MAX_MESSAGE_LEN 35000 /* must be at least 1200, should be at least 3000 according to RFC 5996 */
+
 /* these should all be reasonably conservative limits */
 #define IKE_MAX_MESSAGES 20
 #define IKE_MAX_PAYLOADS 20
