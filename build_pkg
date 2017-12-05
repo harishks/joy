@@ -296,7 +296,8 @@ if [ "$BUILDTYPE" == "deb" ]; then
 elif [ "$BUILDTYPE" == "osxpkg" ]; then
     ./config --ssl-path $SSL_PATH -z bzip2
 elif [ "$BUILDTYPE" == "rpm" ]; then
-    ./config -l /usr/lib64 -z bzip2
+    #./config -l /usr/lib64 -z bzip2
+    ./config -l /usr/lib64
 fi
 if [ "$?" != 0 ]; then
     echo Failed to run ./config
